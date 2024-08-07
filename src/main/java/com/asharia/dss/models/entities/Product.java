@@ -50,18 +50,18 @@ public class Product {
 	@Column(name = "release_date")
 	private LocalDate releaseDate;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+ 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "features")
 	private Feature features;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "images")
 	private Image images;
 
 	@Column(name = "availability")
 	private String availability;
 
-	@OneToMany(mappedBy = "product")
+	@OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
 	private Set<Rating> ratings = new LinkedHashSet<>();
 
 }
