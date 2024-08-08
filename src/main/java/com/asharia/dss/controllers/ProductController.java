@@ -19,6 +19,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -85,6 +86,39 @@ public class ProductController {
 	}
 
 	@PutMapping("/create")
+	@Operation(
+		summary = "Create Product",
+		description = "Create a new product. Please provide the product details in the request body. The product details are mapped to the Product entity. Please refer to the ProductDTO for more details.",
+		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+			required = true,
+			content = @io.swagger.v3.oas.annotations.media.Content(
+				mediaType = "application/json",
+				schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = ProductDTO.class)
+			)
+		),
+		responses = {
+			@ApiResponse(
+				description = "Product created successfully",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = ProductDTO.class)
+					)
+				},
+				responseCode = "201"
+			),
+			@ApiResponse(
+				description = "Product cannot be empty, this occurs when no request body was provided leading to null value",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+					)
+				},
+				responseCode = "400"
+			)
+		}
+	)
 	public ResponseEntity<?> createProduct(@RequestBody ProductDTO productDTO) {
 		if (productDTO == null) {
 			return ResponseEntity.badRequest().body(new MessageDTO(
@@ -93,7 +127,7 @@ public class ProductController {
 			));
 		}
 
-		return ResponseEntity.ok(productService.createProduct(
+		return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(
 			this.mapper.map(productDTO, Product.class)
 		));
 	}

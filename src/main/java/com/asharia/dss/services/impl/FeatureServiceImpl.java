@@ -34,6 +34,7 @@ public class FeatureServiceImpl implements FeatureService {
 			log.error("Pageable object is null, listing all features without pagination");
 			return featureRepository.findAll(Pageable.unpaged());
 		}
+
 		log.debug("Listing all features in page {} with size {}", page.getPageNumber(), page.getPageSize());
 		return featureRepository.findAll(page);
 	}
