@@ -1,10 +1,13 @@
 package com.***REMOVED***.dss.services.impl;
 
+import com.***REMOVED***.dss.models.dto.FeatureDTO;
 import com.***REMOVED***.dss.models.dto.ProductSearchDTO;
 import com.***REMOVED***.dss.models.entities.Product;
 import com.***REMOVED***.dss.models.enums.CodeStatus;
 import com.***REMOVED***.dss.repositories.ProductRepository;
 import com.***REMOVED***.dss.services.ProductService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +20,11 @@ public class ProductServiceImpl implements ProductService {
 
 	public ProductServiceImpl(ProductRepository productRepository) {
 		this.productRepository = productRepository;
+	}
+
+	@Override
+	public Page<Product> listAllProducts(Pageable page) {
+		return this.productRepository.findAll(page);
 	}
 
 	/**
@@ -84,6 +92,33 @@ public class ProductServiceImpl implements ProductService {
 	 */
 	@Override
 	public List<Product> searchProducts(ProductSearchDTO productSearch) {
-		return List.of();
+		// Return an empty list if the search criteria is null
+		if (productSearch == null) {
+			return List.of();
+		}
+
+		List<Product> products = this.productRepository.searchProducts(
+			productSearch.getBrand(),
+			productSearch.getModel(),
+			productSearch.getCategory(),
+			productSearch.getColor(),
+			productSearch.getSize(),
+			productSearch.getGender(),
+			productSearch.getAvailability(),
+			productSearch.getPrice(),
+			productSearch.getDescription(),
+			productSearch.getStock(),
+			productSearch.getReleaseDate()
+		);
+
+		// Iterate through the features and filter the products
+		if (productSearch.getFeatures() != null) {
+			// Filter the products by the features if the feature is not null.
+			for (FeatureDTO feature : productSearch.getFeatures()) {
+				products.removeIf(product -> product.getFeatures().stream().noneMatch(productFeature -> productFeature.getName().contains(feature.getName())));
+			}
+		}
+
+		return products;
 	}
 }

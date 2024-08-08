@@ -6,19 +6,82 @@ import com.***REMOVED***.dss.models.dto.ProductSearchDTO;
 import com.***REMOVED***.dss.models.entities.Product;
 import com.***REMOVED***.dss.models.enums.CodeStatus;
 import com.***REMOVED***.dss.services.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/v1/products")
+@Tag(name = "Product", description = "Product API")
 public class ProductController {
 
 	private final ProductService productService;
 	private final ModelMapper mapper = new ModelMapper();
+	private final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
 	public ProductController(ProductService productService) {
 		this.productService = productService;
+	}
+
+	@GetMapping("/all")
+	@Operation(
+		summary = "List All Products",
+		description = "List all products available in the system. The products are paginated and sorted by default. You can provide the page number and size to get the desired results.<br><br>Example: <a href=\"http://localhost:8080/api/v1/products/all?page=0&size=10\">http://localhost:8080/api/v1/products/all?page=0&size=10</a>",
+		parameters = {
+			@Parameter(
+				name = "page",
+				description = "Page number"
+			),
+			@Parameter(
+				name = "size",
+				description = "Page size"
+			),
+			@Parameter(
+				name = "sort",
+				description = "Sort by field"
+			),
+			@Parameter(
+				name = "direction",
+				description = "Sort direction"
+			)
+		},
+		responses = {
+			@ApiResponse(
+				description = "List of products",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = Page.class)
+					)
+				},
+				responseCode = "200"
+			)
+		}
+	)
+	public ResponseEntity<PagedModel<EntityModel<ProductDTO>>> listAllProducts(@PageableDefault(sort = "id") Pageable page, PagedResourcesAssembler<ProductDTO> assembler) {
+		return ResponseEntity.ok(
+			assembler.toModel(
+				this.convertToProductDTO(
+					productService.listAllProducts(
+						page
+					)
+				)
+			)
+		);
 	}
 
 	@PutMapping("/create")
@@ -35,11 +98,6 @@ public class ProductController {
 		));
 	}
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<?> deleteProduct(@PathVariable Integer id) {
-		return ResponseEntity.ok(productService.deleteProduct(id));
-	}
-
 	@PostMapping("/update")
 	public ResponseEntity<?> updateProduct(@RequestBody ProductDTO productDTO) {
 		if (productDTO == null) {
@@ -54,12 +112,20 @@ public class ProductController {
 		));
 	}
 
-	@GetMapping("/{id}")
-	public ResponseEntity<?> getProduct(@PathVariable Integer id) {
-		return ResponseEntity.ok(productService.getProduct(id));
-	}
-
-	@GetMapping("/search")
+	@PostMapping("/search")
+	@Operation(
+		summary = "Search Product",
+		description = "Search products by providing the search criteria. Please refer to the ProductSearchDTO for more details. The values can be null and will be replaced by default values or empty strings.",
+		tags = "Product",
+		method = "POST",
+		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+			description = "Product search criteria. This will help you filter the products. Please refer to the ProductSearchDTO for more details.",
+			content = @io.swagger.v3.oas.annotations.media.Content(
+				schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = ProductSearchDTO.class)
+			),
+			required = true
+		)
+	)
 	public ResponseEntity<?> searchProducts(@RequestBody ProductSearchDTO productSearch) {
 		if (productSearch == null) {
 			return ResponseEntity.badRequest().body(new MessageDTO(
@@ -68,6 +134,128 @@ public class ProductController {
 			));
 		}
 
+		logger.info("Searching products with criteria: {}", productSearch);
+
 		return ResponseEntity.ok(productService.searchProducts(productSearch));
+	}
+
+	private Page<ProductDTO> convertToProductDTO(Page<Product> products) {
+		return products.map(product -> mapper.map(product, ProductDTO.class));
+	}
+
+	@DeleteMapping("/{id}")
+	@Operation(
+		summary = "Delete Product By ID",
+		description = "Delete product by providing the product id. Provide a valid product id.<br><br>Example: <a href=\"http://localhost:8080/api/v1/products/1\">http://localhost:8080/api/v1/products/1</a>",
+		parameters = {
+			@Parameter(
+				name = "id",
+				description = "Product ID",
+				required = true
+			)
+		},
+		responses = {
+			@ApiResponse(
+				description = "Product deleted successfully",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+					)
+				},
+				responseCode = "200"
+			),
+			@ApiResponse(
+				description = "Product not found",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+					)
+				},
+				responseCode = "404"
+			)
+		}
+	)
+	public ResponseEntity<?> deleteProduct(@PathVariable Integer id) {
+		CodeStatus status = this.productService.deleteProduct(id);
+
+		switch (status) {
+			case NOT_FOUND -> {
+				return ResponseEntity.badRequest().body(
+					new MessageDTO(
+						"Product not found",
+						CodeStatus.NOT_FOUND
+					)
+				);
+			}
+			case OK -> {
+				return ResponseEntity.ok(
+					new MessageDTO(
+						"Product deleted successfully",
+						CodeStatus.OK
+					)
+				);
+			}
+			default -> {
+				return ResponseEntity.badRequest().body(
+					new MessageDTO(
+						"Product could not be deleted",
+						CodeStatus.FAILED
+					)
+				);
+			}
+		}
+	}
+
+	@GetMapping("/{id}")
+	@Operation(
+		summary = "Delete Product",
+		description = "Delete product by providing the product id. Provide a valid product id.<br><br>Example: <a href=\"http://localhost:8080/api/v1/products/delete/1\">http://localhost:8080/api/v1/products/delete/1</a>",
+		parameters = {
+			@Parameter(
+				name = "id",
+				description = "Product ID",
+				required = true
+			)
+		},
+		responses = {
+			@ApiResponse(
+				description = "Product deleted successfully",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = ProductDTO.class)
+					)
+				},
+				responseCode = "200"
+			),
+			@ApiResponse(
+				description = "Product not found",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+					)
+				},
+				responseCode = "404"
+			)
+		}
+	)
+	public ResponseEntity<?> getProduct(@PathVariable Integer id) {
+		Optional<Product> productOptional = productService.getProduct(id);
+
+		// Check if the product exists
+		if (productOptional.isPresent()) {
+			return ResponseEntity.ok(productService.getProduct(id));
+		}
+
+		// Product not found
+		return ResponseEntity.badRequest().body(
+			new MessageDTO(
+				"Product not found",
+				CodeStatus.NOT_FOUND
+			)
+		);
 	}
 }
