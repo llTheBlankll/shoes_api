@@ -1,15 +1,3 @@
-CREATE TABLE IF NOT EXISTS features
-(
-    id   INT PRIMARY KEY,
-    name VARCHAR(255)
-);
-
-CREATE TABLE IF NOT EXISTS images
-(
-    id  INT PRIMARY KEY AUTO_INCREMENT,
-    url VARCHAR(255)
-);
-
 CREATE TABLE IF NOT EXISTS products
 (
     id           INT PRIMARY KEY AUTO_INCREMENT,
@@ -23,11 +11,23 @@ CREATE TABLE IF NOT EXISTS products
     description  TEXT,
     stock        INT,
     release_date DATE,
-    features     INT,
-    images       INT,
-    availability VARCHAR(255),
-    FOREIGN KEY (features) REFERENCES features (id),
-    FOREIGN KEY (images) REFERENCES images (id)
+    availability VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS images
+(
+    id  INT PRIMARY KEY AUTO_INCREMENT,
+    url VARCHAR(255),
+    product_id INT,
+    FOREIGN KEY (product_id) REFERENCES products (id)
+);
+
+CREATE TABLE IF NOT EXISTS features
+(
+    id   INT PRIMARY KEY,
+    name VARCHAR(255),
+    product_id INT,
+    FOREIGN KEY (product_id) REFERENCES products (id)
 );
 
 CREATE TABLE IF NOT EXISTS ratings

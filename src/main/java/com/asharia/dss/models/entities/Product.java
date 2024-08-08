@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -50,16 +51,16 @@ public class Product {
 	@Column(name = "release_date")
 	private LocalDate releaseDate;
 
- 	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "features")
-	private Feature features;
-
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "images")
-	private Image images;
-
 	@Column(name = "availability")
 	private String availability;
+
+	@OneToMany(fetch = FetchType.EAGER)
+	@JoinColumn(name = "product_id", referencedColumnName = "id")
+	private List<Feature> features;
+
+	@OneToMany(fetch = FetchType.EAGER)
+	@JoinColumn(name = "product_id", referencedColumnName = "id")
+	private List<Image> images;
 
 	@OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
 	private Set<Rating> ratings = new LinkedHashSet<>();

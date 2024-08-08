@@ -1,6 +1,5 @@
 package com.***REMOVED***.dss.models.entities;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +16,6 @@ public class Rating {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id")
-	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	private Product product;
 
 	@Column(name = "rating")

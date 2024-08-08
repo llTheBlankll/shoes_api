@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -30,8 +31,8 @@ public class ProductDTO implements Serializable {
 	private String description;
 	private Integer stock;
 	private LocalDate releaseDate;
-	private FeatureDTO features;
-	private ImageDTO images;
+	private List<FeatureDTO> features;
+	private List<ImageDTO> images;
 	private String availability;
 	private Set<RatingDTO> ratings = new LinkedHashSet<>();
 }
