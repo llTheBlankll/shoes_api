@@ -1,17 +1,24 @@
 package com.***REMOVED***.dss.controllers;
 
+import com.***REMOVED***.dss.models.dto.FeatureDTO;
+import com.***REMOVED***.dss.models.dto.MessageDTO;
+import com.***REMOVED***.dss.models.entities.Feature;
+import com.***REMOVED***.dss.models.enums.CodeStatus;
 import com.***REMOVED***.dss.services.FeatureService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/features")
@@ -19,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class FeatureController {
 
 	private final FeatureService featureService;
+	private final ModelMapper modelMapper = new ModelMapper();
 
 	public FeatureController(FeatureService featureService) {
 		this.featureService = featureService;
@@ -29,7 +37,7 @@ public class FeatureController {
 		summary = "List All Features",
 		description = "This will list all distinct features for every product. Listing features is not recommended as they came from all products.",
 		responses = {
-			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+			@ApiResponse(
 				description = "List of features",
 				content = {
 					@io.swagger.v3.oas.annotations.media.Content(
@@ -58,7 +66,272 @@ public class FeatureController {
 			)
 		}
 	)
-	public ResponseEntity<?> listAllFeatures(@PageableDefault(sort = "id", direction = Sort.Direction.ASC ) Pageable page) {
+	public ResponseEntity<?> listAllFeatures(@PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable page) {
 		return ResponseEntity.ok(featureService.listAllFeatures(page));
+	}
+
+	@PutMapping
+	@Operation(
+		summary = "Update Feature",
+		description = "Update feature by providing the feature id. Provide a valid feature id.<br><br>Example: <a href=\"http://localhost:8080/api/v1/features\">http://localhost:8080/api/v1/features</a>",
+		responses = {
+			@ApiResponse(
+				description = "Feature updated successfully",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+					)
+				},
+				responseCode = "200"
+			),
+			@ApiResponse(
+				description = "Feature not found",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+					)
+				},
+				responseCode = "404"
+			),
+			@ApiResponse(
+				description = "Feature cannot be empty, this occurs when no request body was provided leading to null value",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+					)
+				},
+				responseCode = "400"
+			), @ApiResponse(
+			description = "Feature cannot be empty, this occurs when no request body was provided leading to null value",
+			content = {
+				@io.swagger.v3.oas.annotations.media.Content(
+					mediaType = "application/json",
+					schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+				)
+			},
+			responseCode = "400"
+		), @ApiResponse(
+			description = "Feature cannot be empty, this occurs when no request body was provided leading to null value",
+			content = {
+				@io.swagger.v3.oas.annotations.media.Content(
+					mediaType = "application/json",
+					schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+				)
+			},
+			responseCode = "400"
+		), @ApiResponse(
+			description = "Feature cannot be empty, this occurs when no request body was provided leading to null value",
+			content = {
+				@io.swagger.v3.oas.annotations.media.Content(
+					mediaType = "application/json",
+					schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+				)
+			},
+			responseCode = "400"
+		)
+		},
+		parameters = {
+			@Parameter(
+				name = "id",
+				description = "Feature ID",
+				required = true
+			)
+		}
+	)
+	public ResponseEntity<?> updateFeature(@RequestBody FeatureDTO featureDTO) {
+		// Input validation, make sure that there is a valid request body
+		if (featureDTO == null) {
+			return ResponseEntity.badRequest().body(new MessageDTO(
+				"Feature cannot be empty, this occurs when no request body was provided leading to null value",
+				CodeStatus.INVALID
+			));
+		}
+
+		CodeStatus status = this.featureService.updateFeature(
+			modelMapper.map(featureDTO, Feature.class)
+		);
+
+		switch (status) {
+			case OK -> {
+				return ResponseEntity.ok(new MessageDTO(
+					"Feature updated successfully",
+					CodeStatus.OK
+				));
+			}
+			case INVALID -> {
+				return ResponseEntity.badRequest().body(new MessageDTO(
+					"Feature cannot be empty, this occurs when no request body was provided leading to null value. Please provide the feature details in the request body.",
+					CodeStatus.INVALID
+				));
+			}
+			default -> {
+				return ResponseEntity.status(404).body(new MessageDTO(
+					"Feature not found",
+					CodeStatus.NOT_FOUND
+				));
+			}
+		}
+	}
+
+	@DeleteMapping("/{id}")
+	@Operation(
+		summary = "Delete Feature",
+		description = "Delete feature by providing the feature id. Provide a valid feature id.<br><br>Example: <a href=\"http://localhost:8080/api/v1/features/1\">http://localhost:8080/api/v1/features/1</a>",
+		responses = {
+			@ApiResponse(
+				description = "Feature deleted successfully",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+					)
+				},
+				responseCode = "200"
+			),
+			@ApiResponse(
+				description = "Feature not found",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+					)
+				},
+				responseCode = "404"
+			),
+			@ApiResponse(
+				description = "Feature cannot be empty, this occurs when no request body was provided leading to null value",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+					)
+				},
+				responseCode = "400"
+			)
+		},
+		parameters = {
+			@Parameter(
+				name = "id",
+				description = "Feature ID",
+				required = true
+			)
+		}
+	)
+	public ResponseEntity<?> deleteFeature(@PathVariable Integer id) {
+		// Check if the feature id is valid
+		if (id <= 0) {
+			return ResponseEntity.badRequest().body(new MessageDTO(
+				"Feature id is null or invalid, cannot delete the feature",
+				CodeStatus.INVALID
+			));
+		}
+
+		// Get the result of the delete operation.
+		CodeStatus status = this.featureService.deleteFeature(id);
+		switch (status) {
+			case OK -> {
+				return ResponseEntity.ok(new MessageDTO(
+					"Feature deleted successfully",
+					CodeStatus.OK
+				));
+			}
+			case INVALID -> {
+				return ResponseEntity.badRequest().body(new MessageDTO(
+					"Feature cannot be empty, this occurs when no request body was provided leading to null value. Please provide the feature details in the request body.",
+					CodeStatus.INVALID
+				));
+			}
+			default -> {
+				return ResponseEntity.status(404).body(new MessageDTO(
+					"Feature not found",
+					CodeStatus.NOT_FOUND
+				));
+			}
+		}
+	}
+
+	@PutMapping("/create")
+	@Operation(
+		summary = "Create Feature",
+		description = "Create a new feature. Please provide the feature details in the request body. The feature details are mapped to the Feature entity. Please refer to the FeatureDTO for more details.",
+		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+			required = true,
+			content = @io.swagger.v3.oas.annotations.media.Content(
+				mediaType = "application/json",
+				schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = FeatureDTO.class)
+			)
+		),
+		responses = {
+			@ApiResponse(
+				description = "Feature created successfully",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = FeatureDTO.class)
+					)
+				},
+				responseCode = "201"
+			),
+			@ApiResponse(
+				description = "Feature cannot be empty, this occurs when no request body was provided leading to null value",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+					)
+				},
+				responseCode = "400"
+			)
+		}
+	)
+	public ResponseEntity<?> createFeature(@RequestBody FeatureDTO featureDTO) {
+		// Check if the feature id is valid
+		if (featureDTO == null) {
+			return ResponseEntity.badRequest().body(new MessageDTO(
+				"Feature cannot be empty, this occurs when no request body was provided leading to null value. Please provide the feature details in the request body.",
+				CodeStatus.INVALID
+			));
+		}
+
+		// Create the feature
+		CodeStatus status = this.featureService.createFeature(
+			modelMapper.map(featureDTO, Feature.class)
+		);
+
+		// Return the result
+		if (status == CodeStatus.OK) { // ! If feature is created
+			return ResponseEntity.status(201).body(new MessageDTO(
+				"Feature created successfully",
+				CodeStatus.OK
+			));
+		}
+
+		// ! If feature cannot be created due to invalid details in the data.
+		return ResponseEntity.status(400).body(new MessageDTO(
+			"Feature cannot be empty, this occurs when no request body was provided leading to null value. Please provide the feature details in the request body.",
+			CodeStatus.INVALID
+		));
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<?> getFeature(@PathVariable Integer id) {
+		if (id <= 0) {
+			return ResponseEntity.badRequest().body(new MessageDTO(
+				String.format("Invalid ID %s was provided.", id),
+				CodeStatus.INVALID
+			));
+		}
+		Optional<Feature> featureOptional = this.featureService.getFeature(id);
+		if (featureOptional.isPresent()) {
+			return ResponseEntity.ok(featureOptional.get());
+		}
+
+		return ResponseEntity.status(404).body(new MessageDTO(
+			"Feature not found",
+			CodeStatus.NOT_FOUND
+		));
 	}
 }
