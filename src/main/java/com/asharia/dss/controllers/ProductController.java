@@ -160,7 +160,9 @@ public class ProductController {
 			required = true
 		)
 	)
-	public ResponseEntity<?> searchProducts(@RequestBody ProductSearchDTO productSearch) {
+	public ResponseEntity<?> filterProducts(@RequestBody ProductSearchDTO productSearch,
+	                                        @PageableDefault(sort = "availability") Pageable page,
+	                                        PagedResourcesAssembler<ProductDTO> assembler) {
 		if (productSearch == null) {
 			return ResponseEntity.badRequest().body(new MessageDTO(
 				"Product search cannot be empty",
@@ -169,8 +171,13 @@ public class ProductController {
 		}
 
 		logger.info("Searching products with criteria: {}", productSearch);
-
-		return ResponseEntity.ok(productService.searchProducts(productSearch));
+		return ResponseEntity.ok(
+			assembler.toModel(
+				convertToProductDTO(
+					productService.searchProducts(productSearch, page)
+				)
+			)
+		);
 	}
 
 	private Page<ProductDTO> convertToProductDTO(Page<Product> products) {

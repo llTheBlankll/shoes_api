@@ -7,11 +7,14 @@ import com.***REMOVED***.dss.models.enums.CodeStatus;
 import com.***REMOVED***.dss.repositories.ProductRepository;
 import com.***REMOVED***.dss.services.ProductService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -91,10 +94,14 @@ public class ProductServiceImpl implements ProductService {
 	 * @return {@link List<Product>}
 	 */
 	@Override
-	public List<Product> searchProducts(ProductSearchDTO productSearch) {
+	public Page<Product> searchProducts(ProductSearchDTO productSearch, Pageable page) {
 		// Return an empty list if the search criteria is null
 		if (productSearch == null) {
-			return List.of();
+			return Page.empty();
+		}
+		// Check if the brand is empty and set it to null
+		if (productSearch.getBrand() == null || productSearch.getBrand().isEmpty()) {
+			productSearch.setBrand(null);
 		}
 
 		List<Product> products = this.productRepository.searchProducts(
@@ -110,13 +117,15 @@ public class ProductServiceImpl implements ProductService {
 			productSearch.getStock(),
 			productSearch.getReleaseDate()
 		);
+		products = filterProductsByFeatures(products, productSearch.getFeatures());
 
-		// Iterate through the features and filter the products
-		if (productSearch.getFeatures() != null) {
-			// Filter the products by the features if the feature is not null.
-			for (FeatureDTO feature : productSearch.getFeatures()) {
-				products.removeIf(product -> product.getFeatures().stream().noneMatch(productFeature -> productFeature.getName().contains(feature.getName())));
-			}
+		// Add Paging
+		return new PageImpl<>(products, page, products.size());
+	}
+
+	private List<Product> filterProductsByFeatures(List<Product> products, List<FeatureDTO> features) {
+		if (features == null || features.isEmpty()) {
+			return products;
 		}
 
 		return products;
