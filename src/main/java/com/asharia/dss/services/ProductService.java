@@ -51,5 +51,5 @@ public interface ProductService {
 	 * @param productSearch The search criteria
 	 * @return {@link Page<Product>}
 	 */
-	List<Product> searchProducts(ProductSearchDTO productSearch);
+	Page<Product> searchProducts(ProductSearchDTO productSearch, Pageable page);
 }

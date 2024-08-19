@@ -15,7 +15,7 @@ import java.util.List;
 @Accessors(chain = true)
 public class ProductSearchDTO {
 
-	private String brand;
+	private List<String> brand;
 	private String model;
 	private String category;
 	private String color;

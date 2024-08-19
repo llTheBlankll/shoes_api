@@ -41,7 +41,6 @@ public class Product {
 	@Column(name = "price", precision = 10, scale = 2)
 	private BigDecimal price;
 
-	@Lob
 	@Column(name = "description")
 	private String description;
 

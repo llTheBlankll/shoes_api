@@ -3,6 +3,7 @@ package com.***REMOVED***.dss.repositories;
 import com.***REMOVED***.dss.models.entities.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,29 +14,29 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 	// Used for search, using Contains or ILIKE % for searching and case-insensitive
 	@Query(
 		"SELECT p FROM Product as p WHERE " +
-			"(COALESCE(?1, '') = '' OR p.brand ILIKE %?1%) AND " +
-			"(COALESCE(?2, '') = '' OR p.model ILIKE %?2%) AND " +
-			"(COALESCE(?3, '') = '' OR p.category ILIKE %?3%) AND " +
-			"(COALESCE(?4, '') = '' OR p.color ILIKE %?4%) AND " +
-			"(COALESCE(?5, 0) = 0 OR p.size <=?5) AND " +
-			"(COALESCE(?6, '') = '' OR p.gender ILIKE %?6%) AND " +
-			"(COALESCE(?7, '') = '' OR p.availability ILIKE %?7%) AND " +
-			"(COALESCE(?8, 0) = 0 OR p.price <=?8) AND " +
-			"(COALESCE(?9, '') = '' OR p.description ILIKE %?9%) AND " +
-			"(COALESCE(?10, 0) = 0 OR p.stock >= ?10) AND " +
-			"(COALESCE(?11, '') = '' OR p.releaseDate =?11)"
+			"(:brands IS NULL OR p.brand IN :brands) AND " +
+			"(COALESCE(:model, '') = '' OR p.model ILIKE %:model%) AND " +
+			"(COALESCE(:category, '') = '' OR p.category ILIKE %:category%) AND " +
+			"(COALESCE(:color, '') = '' OR p.color ILIKE %:color%) AND " +
+			"(COALESCE(:size, 0) = 0 OR p.size <= :size) AND " +
+			"(COALESCE(:gender, '') = '' OR p.gender ILIKE %:gender%) AND " +
+			"(COALESCE(:availability, '') = '' OR p.availability ILIKE %:availability%) AND " +
+			"(COALESCE(:price, 0) = 0 OR p.price <= :price) AND " +
+			"(COALESCE(:description, '') = '' OR p.description ILIKE %:description%) AND " +
+			"(COALESCE(:stock, 0) = 0 OR p.stock >= :stock) AND " +
+			"(COALESCE(:releaseDate, '') = '' OR p.releaseDate = :releaseDate)"
 	)
 	List<Product> searchProducts(
-		String brand,
-		String model,
-		String category,
-		String color,
-		Integer size,
-		String gender,
-		String availability,
-		BigDecimal price,
-		String description,
-		Integer stock,
-		LocalDate releaseDate
+		@Param("brands") List<String> brand,
+		@Param("model") String model,
+		@Param("category") String category,
+		@Param("color") String color,
+		@Param("size") Integer size,
+		@Param("gender") String gender,
+		@Param("availability") String availability,
+		@Param("price") BigDecimal price,
+		@Param("description") String description,
+		@Param("stock") Integer stock,
+		@Param("releaseDate") LocalDate releaseDate
 	);
 }
