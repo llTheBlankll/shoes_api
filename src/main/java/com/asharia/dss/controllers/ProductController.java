@@ -6,6 +6,7 @@ import com.***REMOVED***.dss.models.dto.ProductSearchDTO;
 import com.***REMOVED***.dss.models.entities.Product;
 import com.***REMOVED***.dss.models.enums.CodeStatus;
 import com.***REMOVED***.dss.services.ProductService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -42,24 +44,6 @@ public class ProductController {
 	@Operation(
 		summary = "List All Products",
 		description = "List all products available in the system. The products are paginated and sorted by default. You can provide the page number and size to get the desired results.<br><br>Example: <a href=\"http://localhost:8080/api/v1/products/all?page=0&size=10\">http://localhost:8080/api/v1/products/all?page=0&size=10</a>",
-		parameters = {
-			@Parameter(
-				name = "page",
-				description = "Page number"
-			),
-			@Parameter(
-				name = "size",
-				description = "Page size"
-			),
-			@Parameter(
-				name = "sort",
-				description = "Sort by field"
-			),
-			@Parameter(
-				name = "direction",
-				description = "Sort direction"
-			)
-		},
 		responses = {
 			@ApiResponse(
 				description = "List of products",
@@ -73,7 +57,7 @@ public class ProductController {
 			)
 		}
 	)
-	public ResponseEntity<PagedModel<EntityModel<ProductDTO>>> listAllProducts(@PageableDefault(sort = "id") Pageable page, PagedResourcesAssembler<ProductDTO> assembler) {
+	public ResponseEntity<PagedModel<EntityModel<ProductDTO>>> listAllProducts(@PageableDefault(sort = "id") Pageable page, @Parameter(hidden = true) PagedResourcesAssembler<ProductDTO> assembler) {
 		return ResponseEntity.ok(
 			assembler.toModel(
 				this.convertToProductDTO(
@@ -161,7 +145,7 @@ public class ProductController {
 		)
 	)
 	public ResponseEntity<?> filterProducts(@RequestBody ProductSearchDTO productSearch,
-	                                        @PageableDefault(sort = "availability") Pageable page,
+	                                        @PageableDefault(sort = "availability", size = 20) Pageable page,
 	                                        PagedResourcesAssembler<ProductDTO> assembler) {
 		if (productSearch == null) {
 			return ResponseEntity.badRequest().body(new MessageDTO(
@@ -178,10 +162,6 @@ public class ProductController {
 				)
 			)
 		);
-	}
-
-	private Page<ProductDTO> convertToProductDTO(Page<Product> products) {
-		return products.map(product -> mapper.map(product, ProductDTO.class));
 	}
 
 	@DeleteMapping("/{id}")
@@ -298,5 +278,30 @@ public class ProductController {
 				CodeStatus.NOT_FOUND
 			)
 		);
+	}
+
+	@GetMapping("/brands/all")
+	@Operation(
+		summary = "Get All Product Brands",
+		description = "Get all product brands",
+		responses = {
+			@ApiResponse(
+				description = "All product brands",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = List.class)
+					)
+				},
+				responseCode = "200"
+			)
+		}
+	)
+	public ResponseEntity<?> getAllBrands() {
+		return ResponseEntity.ok(productService.getAllBrands());
+	}
+
+	private Page<ProductDTO> convertToProductDTO(Page<Product> products) {
+		return products.map(product -> mapper.map(product, ProductDTO.class));
 	}
 }

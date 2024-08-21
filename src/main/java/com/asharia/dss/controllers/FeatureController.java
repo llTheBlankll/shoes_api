@@ -8,6 +8,7 @@ import com.***REMOVED***.dss.services.FeatureService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -317,6 +318,46 @@ public class FeatureController {
 	}
 
 	@GetMapping("/{id}")
+	@Operation(
+		summary = "Get Feature",
+		description = "Get feature by providing the feature id. Provide a valid feature id.<br><br>Example: <a href=\"http://localhost:8080/api/v1/features/1\">http://localhost:8080/api/v1/features/1</a>",
+		responses = {
+			@ApiResponse(
+				description = "Feature found",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = Feature.class)
+					)
+				},
+				responseCode = "200"
+			),
+			@ApiResponse(
+				description = "Feature not found",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+					)
+				},
+				responseCode = "404"
+			)
+		}
+	)
+	@ApiResponses(
+		value = {
+			@ApiResponse(
+				responseCode = "400",
+				description = "Invalid ID",
+				content = {
+					@io.swagger.v3.oas.annotations.media.Content(
+						mediaType = "application/json",
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = MessageDTO.class)
+					)
+				}
+			)
+		}
+	)
 	public ResponseEntity<?> getFeature(@PathVariable Integer id) {
 		if (id <= 0) {
 			return ResponseEntity.badRequest().body(new MessageDTO(
