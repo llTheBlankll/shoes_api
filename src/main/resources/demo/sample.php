@@ -18,7 +18,7 @@ if (!empty($_POST["submitSearch"])) {
 	$search = new ProductSearch();
 	$search->setPrice($_POST["budget"] ?? null);
 
-	switch ($_POST["foot_width"]) {
+	switch ($_POST["foot_width"] ?? "") {
 		case "Narrow":
 			$search->setSize(6);
 			break;
@@ -29,7 +29,7 @@ if (!empty($_POST["submitSearch"])) {
 			$search->setSize(10);
 			break;
 		default:
-			$search->setSize(40);
+			$search->setSize(30);
 			break;
 	}
 
@@ -57,28 +57,28 @@ if (!empty($_POST["submitSearch"])) {
     <!-- Question 1 -->
     <h3>1. What type of player are you?</h3>
     <p>Different playing styles call for different shoes.</p>
-    <input type="radio" name="player_type" value="Quick and shifty guard"> Quick and shifty guard<br>
-    <input type="radio" name="player_type" value="Versatile wing or forward"> Versatile wing or forward<br>
-    <input type="radio" name="player_type" value="Big and powerful center"> Big and powerful center<br>
+    <input type="radio" name="features[]" value="Quick and shifty guard"> Quick and shifty guard<br>
+    <input type="radio" name="features[]" value="Versatile wing or forward"> Versatile wing or forward<br>
+    <input type="radio" name="features[]" value="Big and powerful center"> Big and powerful center<br>
 
     <!-- Question 2 -->
     <h3>2. What type of basketball shoes do you like?</h3>
-    <input type="radio" name="shoe_type" value="Low Top"> Low Top<br>
-    <input type="radio" name="shoe_type" value="Mid Top"> Mid Top<br>
-    <input type="radio" name="shoe_type" value="High Top"> High Top<br>
+    <input type="radio" name="features[]" value="Low Top"> Low Top<br>
+    <input type="radio" name="features[]" value="Mid Top"> Mid Top<br>
+    <input type="radio" name="features[]" value="High Top"> High Top<br>
 
     <!-- Question 3 -->
     <h3>3. How wide are your feet?</h3>
     <p>This will make sure that the shoes fit your feet.</p>
-    <input type="radio" name="foot_width" value="Narrow"> arrow<br>
+    <input type="radio" name="foot_width" value="Narrow">Narrow<br>
     <input type="radio" name="foot_width" value="Regular">Regular<br>
     <input type="radio" name="foot_width" value="Wide">Wide<br>
 
     <!-- Question 4 -->
     <h3>4. Do you play outdoors a lot?</h3>
     <p>The rubber and upper material of outdoor shoes need to be more durable.</p>
-    <input type="radio" name="play_outdoors" value="No, very little"> No, very little<br>
-    <input type="radio" name="play_outdoors" value="All the time"> All the time<br>
+    <input type="radio" name="features[]" value="No, very little"> No, very little<br>
+    <input type="radio" name="features[]" value="All the time"> All the time<br>
 
     <!-- Question 5 -->
     <h3>5. What shoe brands do you like?</h3>
