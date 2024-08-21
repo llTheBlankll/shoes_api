@@ -32,7 +32,6 @@ public class ProductDTO implements Serializable {
 	private Integer stock;
 	private LocalDate releaseDate;
 	private List<FeatureDTO> features;
-	private List<ImageDTO> images;
 	private String availability;
-	private Set<RatingDTO> ratings = new LinkedHashSet<>();
+	private Set<ReviewDTO> ratings = new LinkedHashSet<>();
 }

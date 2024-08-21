@@ -17,4 +17,15 @@ import java.io.Serializable;
 public class FeatureDTO implements Serializable {
 	private Integer id;
 	private String name;
+	private String value;
+
+	public boolean isString() {
+		// Check if the value of the variable value has any letter
+		return value.matches("[a-zA-Z]+");
+	}
+
+	public boolean isNumeric() {
+		// Check if the value of the variable value has any number
+		return value.matches("[0-9]+");
+	}
 }

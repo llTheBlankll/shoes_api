@@ -57,11 +57,10 @@ public class Product {
 	@JoinColumn(name = "product_id", referencedColumnName = "id")
 	private List<Feature> features;
 
-	@OneToMany(fetch = FetchType.EAGER)
-	@JoinColumn(name = "product_id", referencedColumnName = "id")
-	private List<Image> images;
-
 	@OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
-	private Set<Rating> ratings = new LinkedHashSet<>();
+	private Set<Review> reviews = new LinkedHashSet<>();
 
+	public double getAverageRating() {
+		return reviews.stream().mapToInt(Review::getRating).average().orElse(0);
+	}
 }

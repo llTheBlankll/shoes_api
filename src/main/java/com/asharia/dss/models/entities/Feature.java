@@ -18,4 +18,7 @@ public class Feature {
 
 	@Column(name = "name")
 	private String name;
+
+	@Column(name = "value")
+	private String value;
 }
