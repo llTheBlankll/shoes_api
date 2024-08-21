@@ -52,4 +52,6 @@ public interface ProductService {
 	 * @return {@link Page<Product>}
 	 */
 	Page<Product> searchProducts(ProductSearchDTO productSearch, Pageable page);
+
+	List<String> getAllBrands();
 }

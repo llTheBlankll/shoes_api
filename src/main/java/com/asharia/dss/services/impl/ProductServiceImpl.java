@@ -104,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
 			productSearch.setBrand(null);
 		}
 
-		List<Product> products = this.productRepository.searchProducts(
+		Page<Product> products = this.productRepository.searchProducts(
 			productSearch.getBrand(),
 			productSearch.getModel(),
 			productSearch.getCategory(),
@@ -115,12 +115,28 @@ public class ProductServiceImpl implements ProductService {
 			productSearch.getPrice(),
 			productSearch.getDescription(),
 			productSearch.getStock(),
-			productSearch.getReleaseDate()
+			productSearch.getReleaseDate(),
+			page
 		);
-		products = filterProductsByFeatures(products, productSearch.getFeatures());
 
-		// Add Paging
-		return new PageImpl<>(products, page, products.size());
+		// Filter the products
+		List<Product> productList = filterProductsByFeatures(products.getContent(), productSearch.getFeatures());
+		return new PageImpl<>(productList, page, products.getTotalElements());
+	}
+
+	/**
+	 * Get all brands
+	 *
+	 * @return {@link List<String>}
+	 */
+	@Override
+	public List<String> getAllBrands() {
+		List<Product> products = this.productRepository.findAll();
+
+		return products.stream()
+			.map(Product::getBrand)
+			.distinct()
+			.collect(Collectors.toList());
 	}
 
 	private List<Product> filterProductsByFeatures(List<Product> products, List<FeatureDTO> features) {
@@ -128,6 +144,10 @@ public class ProductServiceImpl implements ProductService {
 			return products;
 		}
 
-		return products;
+		return products.stream()
+			.filter(product -> product.getFeatures().stream()
+				.anyMatch(feature -> feature.getName().contains(features.getFirst().getName()))
+			)
+			.collect(Collectors.toList());
 	}
 }
