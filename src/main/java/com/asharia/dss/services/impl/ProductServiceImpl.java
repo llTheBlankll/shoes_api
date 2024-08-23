@@ -1,8 +1,8 @@
 package com.***REMOVED***.dss.services.impl;
 
-import com.***REMOVED***.dss.models.dto.FeatureDTO;
 import com.***REMOVED***.dss.models.dto.FeatureFilterDTO;
 import com.***REMOVED***.dss.models.dto.ProductSearchDTO;
+import com.***REMOVED***.dss.models.entities.Feature;
 import com.***REMOVED***.dss.models.entities.Product;
 import com.***REMOVED***.dss.models.enums.CodeStatus;
 import com.***REMOVED***.dss.repositories.ProductRepository;
@@ -11,12 +11,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -107,12 +105,13 @@ public class ProductServiceImpl implements ProductService {
 			return Page.empty();
 		}
 		// Check if the brand is empty and set it to null
-		if (productSearch.getBrand() == null || productSearch.getBrand().isEmpty()) {
-			productSearch.setBrand(null);
+		if (productSearch.getBrands() == null || productSearch.getBrands().isEmpty()) {
+			productSearch.setBrands(null);
 		}
 
+		logger.info("Searching products with criteria: {}", productSearch);
 		Page<Product> products = this.productRepository.searchProducts(
-			productSearch.getBrand(),
+			productSearch.getBrands(),
 			productSearch.getModel(),
 			productSearch.getCategory(),
 			productSearch.getColor(),
@@ -125,10 +124,13 @@ public class ProductServiceImpl implements ProductService {
 			productSearch.getReleaseDate(),
 			page
 		);
+		List<Product> modifiableProduct = products.getContent();
 
 		// Filter the products
-		List<Product> productList = filterProductsByFeatures(products.getContent(), productSearch.getFeatureFilters());
-		return new PageImpl<>(productList, page, products.getTotalElements());
+		List<Product> filteredProducts = filterProductsByFeatures(modifiableProduct, productSearch.getFeatureFilters());
+		logger.info("Found {} products", filteredProducts.size());
+		return new PageImpl<>(filteredProducts, page, products.getTotalElements());
+//		return products;
 	}
 
 	/**
@@ -147,60 +149,47 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	private List<Product> filterProductsByFeatures(List<Product> products, List<FeatureFilterDTO> filters) {
-		Iterator<Product> iterator = products.iterator();
-		while (iterator.hasNext()) {
-			Product iteratedProduct = iterator.next();
-			for (FeatureFilterDTO filter : filters) {
-				// Field that will be filtered
-				Object fieldValue = getFieldValue(filter.getName(), iteratedProduct);
-				if (fieldValue == null) {
-					throw new IllegalArgumentException("Field not found: " + filter.getName());
-				}
-
-				boolean filtered = filterData(filter.getOperator(), fieldValue, filter.getValue());
-				if (!filtered) {
-					iterator.remove();
-				}
-			}
+		// If there are no filters, return the products since no filtering is needed
+		if (filters.isEmpty()) {
+			return products;
 		}
-		return products;
+
+		// Filter the products
+		return products.stream()
+			.filter(product -> filters.stream()
+				.allMatch(filter -> filterData(filter, product)))
+			.collect(Collectors.toList());
 	}
 
-	private boolean filterData(String operator, Object fieldValue, Object filterValue) {
-		// Check if the field value is an integer or a string
-		switch (operator) {
-			case "==" -> {
-				return fieldValue.equals(filterValue);
-			}
-			case "<" -> {
-				if (fieldValue instanceof Integer) {
-					return ((Integer) fieldValue).compareTo((Integer) filterValue) < 0;
-				} else if (fieldValue instanceof Long) {
-					return ((Long) fieldValue).compareTo((Long) filterValue) < 0;
-				}
+	private boolean filterData(FeatureFilterDTO filter, Product product) {
+		for (Feature feature : product.getFeatures())
 
-				return false;
+			if (feature.getName().equals(filter.getName())) {
+				return switch (filter.getOperator()) {
+					case "==" -> feature.getValue().equals(filter.getValue());
+					case "<" -> {
+						// Check if the feature.getValue() is a number
+						logger.info("Checking if {} is less than {}", feature.getValue(), filter.getValue());
+						try {
+							yield Double.parseDouble(feature.getValue()) < Double.parseDouble(filter.getValue().toString());
+						} catch (NumberFormatException | ClassCastException e) {
+							logger.error("Error while checking if {} is less than {}", feature.getValue(), filter.getValue());
+							yield false;
+						}
+					}
+					case ">" -> {
+						// Check if the feature.getValue() is a number
+						logger.info("Checking if {} is greater than {}", feature.getValue(), filter.getValue());
+						try {
+							yield Double.parseDouble(feature.getValue()) > Double.parseDouble(filter.getValue().toString());
+						} catch (NumberFormatException | ClassCastException e) {
+							logger.error("Error while checking if {} is greater than {}", feature.getValue(), filter.getValue());
+							yield false;
+						}
+					}
+					default -> false;
+				};
 			}
-			case ">" -> {
-				if (fieldValue instanceof Integer) {
-					return ((Integer) fieldValue).compareTo((Integer) filterValue) > 0;
-				} else if (fieldValue instanceof Long) {
-					return ((Long) fieldValue).compareTo((Long) filterValue) > 0;
-				}
-
-				return false;
-			}
-			default -> {
-				return false;
-			}
-		}
-	}
-
-	private Field getFieldValue(String fieldName, Product product) {
-		try {
-			return product.getClass().getDeclaredField(fieldName);
-		} catch (NoSuchFieldException e) {
-			return null;
-		}
+		return false;
 	}
 }
