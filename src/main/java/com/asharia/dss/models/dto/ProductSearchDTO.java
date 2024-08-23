@@ -26,5 +26,5 @@ public class ProductSearchDTO {
 	private String description;
 	private Integer stock;
 	private LocalDate releaseDate;
-	private List<FeatureDTO> features;
+	private List<FeatureFilterDTO> featureFilters;
 }

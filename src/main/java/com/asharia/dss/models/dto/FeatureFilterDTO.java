@@ -5,17 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import java.io.Serializable;
-
-/**
- * DTO for {@link com.***REMOVED***.dss.models.entities.Feature}
- */
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Accessors(chain = true)
-public class FeatureDTO implements Serializable {
-	private Integer id;
+public class FeatureFilterDTO {
 	private String name;
-	private String value;
+	private String operator;
+	private Object value;
 }
