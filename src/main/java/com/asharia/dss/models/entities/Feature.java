@@ -1,9 +1,7 @@
 package com.***REMOVED***.dss.models.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,12 +11,20 @@ import lombok.Setter;
 @Table(name = "features")
 public class Feature {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id", nullable = false)
 	private Integer id;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "product_id")
+	private Product product;
+
+	@Size(max = 255)
 	@Column(name = "name")
 	private String name;
 
+	@Size(max = 255)
 	@Column(name = "value")
 	private String value;
+
 }
