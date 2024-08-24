@@ -1,5 +1,6 @@
 package com.***REMOVED***.dss.models.dto;
 
+import com.***REMOVED***.dss.models.enums.Fit;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,16 +23,12 @@ import java.util.Set;
 public class ProductDTO implements Serializable {
 	private Integer id;
 	private String brand;
-	private String model;
-	private String category;
-	private String color;
+	private String name;
+	private Fit fit;
 	private Integer size;
-	private String gender;
 	private BigDecimal price;
 	private String description;
-	private Integer stock;
 	private LocalDate releaseDate;
 	private List<FeatureDTO> features;
-	private String availability;
 	private Set<ReviewDTO> ratings = new LinkedHashSet<>();
 }

@@ -1,5 +1,6 @@
 package com.***REMOVED***.dss.models.dto;
 
+import com.***REMOVED***.dss.models.enums.Fit;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,15 +17,11 @@ import java.util.List;
 public class ProductSearchDTO {
 
 	private List<String> brands;
-	private String model;
-	private String category;
-	private String color;
+	private String name;
 	private Integer size;
-	private String gender;
-	private String availability;
+	private Fit fit;
 	private BigDecimal price;
 	private String description;
-	private Integer stock;
 	private LocalDate releaseDate;
 	private List<FeatureFilterDTO> featureFilters;
 }

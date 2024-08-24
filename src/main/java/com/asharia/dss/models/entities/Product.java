@@ -1,5 +1,6 @@
 package com.***REMOVED***.dss.models.entities;
 
+import com.***REMOVED***.dss.models.enums.Fit;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,20 +24,15 @@ public class Product {
 	@Column(name = "brand")
 	private String brand;
 
-	@Column(name = "model")
-	private String model;
-
-	@Column(name = "category")
-	private String category;
-
-	@Column(name = "color")
-	private String color;
-
 	@Column(name = "size")
 	private Integer size;
 
-	@Column(name = "gender")
-	private String gender;
+	@Column(name = "name")
+	private String name;
+
+	@Column(name = "fit")
+	@Enumerated(EnumType.STRING)
+	private Fit fit;
 
 	@Column(name = "price", precision = 10, scale = 2)
 	private BigDecimal price;
@@ -44,14 +40,8 @@ public class Product {
 	@Column(name = "description")
 	private String description;
 
-	@Column(name = "stock")
-	private Integer stock;
-
 	@Column(name = "release_date")
 	private LocalDate releaseDate;
-
-	@Column(name = "availability")
-	private String availability;
 
 	@OneToMany(fetch = FetchType.EAGER)
 	@JoinColumn(name = "product_id", referencedColumnName = "id")
@@ -59,8 +49,4 @@ public class Product {
 
 	@OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
 	private Set<Review> reviews = new LinkedHashSet<>();
-
-	public double getAverageRating() {
-		return reviews.stream().mapToInt(Review::getRating).average().orElse(0);
-	}
 }
