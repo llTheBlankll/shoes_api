@@ -15,6 +15,7 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -58,6 +59,7 @@ public class ProductController {
 		}
 	)
 	public ResponseEntity<PagedModel<EntityModel<ProductDTO>>> listAllProducts(@PageableDefault(sort = "id") Pageable page, @Parameter(hidden = true) PagedResourcesAssembler<ProductDTO> assembler) {
+		// ! This will return all products available in the system.
 		return ResponseEntity.ok(
 			assembler.toModel(
 				this.convertToProductDTO(
@@ -118,6 +120,7 @@ public class ProductController {
 
 	@PostMapping("/update")
 	public ResponseEntity<?> updateProduct(@RequestBody ProductDTO productDTO) {
+		// ! Validate the product
 		if (productDTO == null) {
 			return ResponseEntity.badRequest().body(new MessageDTO(
 				"Product cannot be empty",
@@ -125,6 +128,7 @@ public class ProductController {
 			));
 		}
 
+		// ! Update the product
 		return ResponseEntity.ok(productService.updateProduct(
 			this.mapper.map(productDTO, Product.class)
 		));
@@ -145,8 +149,10 @@ public class ProductController {
 		)
 	)
 	public ResponseEntity<?> filterProducts(@RequestBody ProductSearchDTO productSearch,
-	                                        @PageableDefault(sort = "availability", size = 20) Pageable page,
+	                                        @RequestParam(required = false, defaultValue = "0") int page,
+																					@RequestParam(required = false, defaultValue = "10") int size,
 	                                        PagedResourcesAssembler<ProductDTO> assembler) {
+		// * Check if the product search is not null.
 		if (productSearch == null) {
 			return ResponseEntity.badRequest().body(new MessageDTO(
 				"Product search cannot be empty",
@@ -156,9 +162,9 @@ public class ProductController {
 
 		logger.info("Searching products with criteria: {}", productSearch);
 		return ResponseEntity.ok(
-			assembler.toModel(
+			assembler.toModel( // Assembler toModel converts Page<ProductDTO> to PagedModel<EntityModel<ProductDTO>>
 				convertToProductDTO(
-					productService.searchProducts(productSearch, page)
+					productService.searchProducts(productSearch, PageRequest.of(page, size))
 				)
 			)
 		);
@@ -199,18 +205,25 @@ public class ProductController {
 		}
 	)
 	public ResponseEntity<?> deleteProduct(@PathVariable Integer id) {
-		CodeStatus status = this.productService.deleteProduct(id);
+		if (id == null) {
+			return ResponseEntity.badRequest().body(new MessageDTO(
+				"Product ID cannot be empty, /products/<PRODUCT ID> must be provided",
+				CodeStatus.INVALID
+			));
+		}
 
+		// Get the status of the product
+		CodeStatus status = this.productService.deleteProduct(id);
 		switch (status) {
-			case NOT_FOUND -> {
-				return ResponseEntity.badRequest().body(
+			case NOT_FOUND -> { // ! If the product is not found, send a 404 response with a message
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
 					new MessageDTO(
 						"Product not found",
 						CodeStatus.NOT_FOUND
 					)
 				);
 			}
-			case OK -> {
+			case OK -> { // ! If the product is deleted, send a 200 response with a message
 				return ResponseEntity.ok(
 					new MessageDTO(
 						"Product deleted successfully",
@@ -218,7 +231,7 @@ public class ProductController {
 					)
 				);
 			}
-			default -> {
+			default -> { // ! If the product could not be deleted, send a 400 response with a message (This will never happen)
 				return ResponseEntity.badRequest().body(
 					new MessageDTO(
 						"Product could not be deleted",
@@ -268,11 +281,11 @@ public class ProductController {
 
 		// Check if the product exists
 		if (productOptional.isPresent()) {
-			return ResponseEntity.ok(productService.getProduct(id));
+			return ResponseEntity.ok(productService.getProduct(id)); // ! If the product exists, send a 200 response with the product
 		}
 
 		// Product not found
-		return ResponseEntity.badRequest().body(
+		return ResponseEntity.badRequest().body( // ! If the product does not exist, send a 404 response with a message
 			new MessageDTO(
 				"Product not found",
 				CodeStatus.NOT_FOUND
@@ -298,10 +311,11 @@ public class ProductController {
 		}
 	)
 	public ResponseEntity<?> getAllBrands() {
+		// ! Get all brands
 		return ResponseEntity.ok(productService.getAllBrands());
 	}
 
 	private Page<ProductDTO> convertToProductDTO(Page<Product> products) {
-		return products.map(product -> mapper.map(product, ProductDTO.class));
+		return products.map(product -> mapper.map(product, ProductDTO.class)); // ! Convert Page<Product> to Page<ProductDTO>
 	}
 }

@@ -112,15 +112,11 @@ public class ProductServiceImpl implements ProductService {
 		logger.info("Searching products with criteria: {}", productSearch);
 		Page<Product> products = this.productRepository.searchProducts(
 			productSearch.getBrands(),
-			productSearch.getModel(),
-			productSearch.getCategory(),
-			productSearch.getColor(),
-			productSearch.getSize(),
-			productSearch.getGender(),
-			productSearch.getAvailability(),
+			productSearch.getName(),
+			productSearch.getFit(),
 			productSearch.getPrice(),
+			productSearch.getSize(),
 			productSearch.getDescription(),
-			productSearch.getStock(),
 			productSearch.getReleaseDate(),
 			page
 		);
@@ -161,29 +157,43 @@ public class ProductServiceImpl implements ProductService {
 			.collect(Collectors.toList());
 	}
 
+
+	/**
+	 * Filter data based on feature filters and product features
+	 *
+	 * @param filter  The {@link FeatureFilterDTO} object containing the filter name, operator, and value
+	 * @param product The {@link Product} object containing the features to be filtered
+	 * @return {@link boolean} true if the product passes the filter, false otherwise
+	 */
 	private boolean filterData(FeatureFilterDTO filter, Product product) {
 		for (Feature feature : product.getFeatures())
-
+			/*
+			 If the feature name matches the filter name, compare the feature value with the filter value using the operator.
+			 If the comparison is true, return true.
+			 If the comparison is false, continue to the next feature.
+			 If there are no more features, return false.
+			 */
 			if (feature.getName().equals(filter.getName())) {
 				return switch (filter.getOperator()) {
 					case "==" -> feature.getValue().equals(filter.getValue());
 					case "<" -> {
-						// Check if the feature.getValue() is a number
-						logger.info("Checking if {} is less than {}", feature.getValue(), filter.getValue());
 						try {
 							yield Double.parseDouble(feature.getValue()) < Double.parseDouble(filter.getValue().toString());
 						} catch (NumberFormatException | ClassCastException e) {
-							logger.error("Error while checking if {} is less than {}", feature.getValue(), filter.getValue());
 							yield false;
 						}
 					}
 					case ">" -> {
-						// Check if the feature.getValue() is a number
-						logger.info("Checking if {} is greater than {}", feature.getValue(), filter.getValue());
 						try {
 							yield Double.parseDouble(feature.getValue()) > Double.parseDouble(filter.getValue().toString());
 						} catch (NumberFormatException | ClassCastException e) {
-							logger.error("Error while checking if {} is greater than {}", feature.getValue(), filter.getValue());
+							yield false;
+						}
+					}
+					case "<=" -> {
+						try {
+							yield Double.parseDouble(feature.getValue()) <= Double.parseDouble(filter.getValue().toString());
+						} catch (NumberFormatException | ClassCastException e) {
 							yield false;
 						}
 					}
