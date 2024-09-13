@@ -2,13 +2,17 @@ package com.***REMOVED***.dss.models.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "features")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Feature {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,4 +31,12 @@ public class Feature {
 	@Column(name = "value")
 	private String value;
 
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "(" +
+			"id = " + id + ", " +
+			"product = " + product.toString() + ", " +
+			"name = " + name + ", " +
+			"value = " + value + ")";
+	}
 }

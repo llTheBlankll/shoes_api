@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Application SSH" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="dynamic-shoes-search.main" />
+    <target name="ubuntu@15.235.209.30:22" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.***REMOVED***.dss.DynamicShoesSearchApplication" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

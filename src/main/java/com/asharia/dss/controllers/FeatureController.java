@@ -1,15 +1,19 @@
 package com.***REMOVED***.dss.controllers;
 
-import com.***REMOVED***.dss.models.dto.FeatureDTO;
+import com.***REMOVED***.dss.models.dto.FeatureTransactionDTO;
 import com.***REMOVED***.dss.models.dto.MessageDTO;
 import com.***REMOVED***.dss.models.entities.Feature;
+import com.***REMOVED***.dss.models.entities.Product;
 import com.***REMOVED***.dss.models.enums.CodeStatus;
 import com.***REMOVED***.dss.services.FeatureService;
+import com.***REMOVED***.dss.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,9 +31,12 @@ public class FeatureController {
 
 	private final FeatureService featureService;
 	private final ModelMapper modelMapper = new ModelMapper();
+	private final ProductService productService;
+	private final Logger logger = LogManager.getLogger(this.getClass());
 
-	public FeatureController(FeatureService featureService) {
+	public FeatureController(FeatureService featureService, ProductService productService) {
 		this.featureService = featureService;
+		this.productService = productService;
 	}
 
 	@GetMapping("/all")
@@ -141,9 +148,9 @@ public class FeatureController {
 			)
 		}
 	)
-	public ResponseEntity<?> updateFeature(@RequestBody FeatureDTO featureDTO) {
+	public ResponseEntity<?> updateFeature(@RequestBody FeatureTransactionDTO featureTransactionDTO) {
 		// Input validation, make sure that there is a valid request body
-		if (featureDTO == null) {
+		if (featureTransactionDTO == null) {
 			return ResponseEntity.badRequest().body(new MessageDTO(
 				"Feature cannot be empty, this occurs when no request body was provided leading to null value",
 				CodeStatus.INVALID
@@ -151,7 +158,7 @@ public class FeatureController {
 		}
 
 		CodeStatus status = this.featureService.updateFeature(
-			modelMapper.map(featureDTO, Feature.class)
+			modelMapper.map(featureTransactionDTO, Feature.class)
 		);
 
 		switch (status) {
@@ -256,12 +263,12 @@ public class FeatureController {
 	@PutMapping("/create")
 	@Operation(
 		summary = "Create Feature",
-		description = "Create a new feature. Please provide the feature details in the request body. The feature details are mapped to the Feature entity. Please refer to the FeatureDTO for more details.",
+		description = "Create a new feature. Please provide the feature details in the request body. The feature details are mapped to the Feature entity. Please refer to the FeatureTransactionDTO for more details.",
 		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
 			required = true,
 			content = @io.swagger.v3.oas.annotations.media.Content(
 				mediaType = "application/json",
-				schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = FeatureDTO.class)
+				schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = FeatureTransactionDTO.class)
 			)
 		),
 		responses = {
@@ -270,7 +277,7 @@ public class FeatureController {
 				content = {
 					@io.swagger.v3.oas.annotations.media.Content(
 						mediaType = "application/json",
-						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = FeatureDTO.class)
+						schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = FeatureTransactionDTO.class)
 					)
 				},
 				responseCode = "201"
@@ -287,28 +294,53 @@ public class FeatureController {
 			)
 		}
 	)
-	public ResponseEntity<?> createFeature(@RequestBody FeatureDTO featureDTO) {
+	public ResponseEntity<?> createFeature(@RequestBody FeatureTransactionDTO featureTransactionDTO) {
+		logger.debug("Creating a new feature for product");
 		// Check if the feature id is valid
-		if (featureDTO == null) {
+		if (featureTransactionDTO == null || featureTransactionDTO.getProductId() == null) {
+			logger.error("Feature or Product cannot be empty, this occurs when no request body was provided leading to null value. Please provide the feature details in the request body.");
 			return ResponseEntity.badRequest().body(new MessageDTO(
-				"Feature cannot be empty, this occurs when no request body was provided leading to null value. Please provide the feature details in the request body.",
+				"Feature or Product cannot be empty, this occurs when no request body was provided leading to null value. Please provide the feature details in the request body.",
 				CodeStatus.INVALID
 			));
 		}
 
+		// ! Get product and check for its existence.
+		logger.debug("Fetching product with id: {}", featureTransactionDTO.getProductId());
+		Optional<Product> product = this.productService.getProduct(featureTransactionDTO.getProductId());
+		if (product.isEmpty()) {
+			logger.error("Product not found");
+			return ResponseEntity.status(404).body(new MessageDTO(
+				"Product not found",
+				CodeStatus.NOT_FOUND
+			));
+		}
+
+		logger.debug("Creating feature");
+		// Convert the DTO to entity
+		Feature feature = new Feature(
+			null,
+			product.get(),
+			featureTransactionDTO.getName(),
+			featureTransactionDTO.getValue()
+		);
+
 		// Create the feature
 		CodeStatus status = this.featureService.createFeature(
-			modelMapper.map(featureDTO, Feature.class)
+			feature
 		);
+		logger.debug("Feature created with status: {}", status);
 
 		// Return the result
 		if (status == CodeStatus.OK) { // ! If feature is created
-			return ResponseEntity.status(201).body(new MessageDTO(
+			logger.debug("Feature created successfully");
+			return ResponseEntity.status(200).body(new MessageDTO(
 				"Feature created successfully",
 				CodeStatus.OK
 			));
 		}
 
+		logger.error("Feature cannot be empty, this occurs when no request body was provided leading to null value. Please provide the feature details in the request body.");
 		// ! If feature cannot be created due to invalid details in the data.
 		return ResponseEntity.status(400).body(new MessageDTO(
 			"Feature cannot be empty, this occurs when no request body was provided leading to null value. Please provide the feature details in the request body.",

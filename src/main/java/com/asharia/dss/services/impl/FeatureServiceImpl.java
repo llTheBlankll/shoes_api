@@ -4,6 +4,9 @@ import com.***REMOVED***.dss.models.entities.Feature;
 import com.***REMOVED***.dss.models.enums.CodeStatus;
 import com.***REMOVED***.dss.repositories.FeatureRepository;
 import com.***REMOVED***.dss.services.FeatureService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,6 +54,7 @@ public class FeatureServiceImpl implements FeatureService {
 			return CodeStatus.INVALID;
 		}
 
+		log.debug(feature.toString());
 		log.debug("Creating a new feature for product {}", feature.getId());
 		featureRepository.save(feature);
 		return CodeStatus.OK;
@@ -73,6 +77,7 @@ public class FeatureServiceImpl implements FeatureService {
 		// Check if the feature exists
 		Optional<Feature> feature = featureRepository.findById(featureId);
 
+		// Check if the feature exists
 		if (feature.isEmpty()) {
 			log.debug("Feature with id {} does not exist, cannot delete the feature", featureId);
 			return CodeStatus.NOT_FOUND;
@@ -98,7 +103,6 @@ public class FeatureServiceImpl implements FeatureService {
 
 		// Check if the feature exists
 		Optional<Feature> featureOptional = featureRepository.findById(feature.getId());
-
 		if (featureOptional.isEmpty()) {
 			log.debug("Feature with id {} does not exist, cannot update the feature", feature.getId());
 			return CodeStatus.NOT_FOUND;

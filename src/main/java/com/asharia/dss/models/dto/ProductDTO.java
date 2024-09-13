@@ -29,6 +29,6 @@ public class ProductDTO implements Serializable {
 	private BigDecimal price;
 	private String description;
 	private LocalDate releaseDate;
-	private List<FeatureDTO> features;
+	private List<FeatureTransactionDTO> features;
 	private Set<ReviewDTO> ratings = new LinkedHashSet<>();
 }

@@ -19,7 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 		"SELECT p FROM Product as p WHERE " +
 			"(:brands IS NULL OR p.brand IN :brands) AND " +
 			"(COALESCE(:name, '') = '' OR p.name ILIKE %:name%) AND " +
-			"(COALESCE(:fit, 0) = 0 OR p.fit <= :fit) AND " +
+			"(COALESCE(:fit, '') = '' OR p.fit = :fit) AND " +
 			"(COALESCE(:price, 0) = 0 OR p.price <= :price) AND " +
 			"(COALESCE(:size, 0) = 0 OR p.size <= :size) AND " +
 			"(COALESCE(:description, '') = '' OR p.description ILIKE %:description%) AND " +

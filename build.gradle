@@ -5,10 +5,16 @@ plugins {
     id 'org.hibernate.orm' version '6.5.2.Final'
     id 'org.graalvm.buildtools.native' version '0.10.2'
     id 'org.asciidoctor.jvm.convert' version '3.3.2'
+    id 'application'
 }
 
 group = 'com.***REMOVED***'
 version = '0.0.1-SNAPSHOT'
+mainClassName = 'com.***REMOVED***.dss.DynamicShoesSearchApplication'
+
+springBoot {
+    mainClass = 'com.***REMOVED***.dss.DynamicShoesSearchApplication'
+}
 
 java {
     toolchain {
@@ -58,4 +64,22 @@ tasks.named('test') {
 tasks.named('asciidoctor') {
     inputs.dir snippetsDir
     dependsOn test
+}
+
+application {
+    mainClass = 'com.***REMOVED***.dss.DynamicShoesSearchApplication'
+}
+
+bootJar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+    launchScript()
+}
+
+jar {
+    archiveBaseName = 'dss'
+    archiveVersion = '0.0.1-SNAPSHOT'
+}
+
+springBoot {
+    mainClass = 'com.***REMOVED***.dss.DynamicShoesSearchApplication'
 }

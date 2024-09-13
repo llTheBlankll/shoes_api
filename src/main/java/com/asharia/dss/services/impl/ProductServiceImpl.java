@@ -109,22 +109,16 @@ public class ProductServiceImpl implements ProductService {
 			productSearch.setBrands(null);
 		}
 
-		logger.info("Searching products with criteria: {}", productSearch);
-		Page<Product> products = this.productRepository.searchProducts(
-			productSearch.getBrands(),
-			productSearch.getName(),
-			productSearch.getFit(),
-			productSearch.getPrice(),
-			productSearch.getSize(),
-			productSearch.getDescription(),
-			productSearch.getReleaseDate(),
-			page
-		);
+		logger.debug("Searching products with criteria: {}", productSearch);
+		Page<Product> products = this.productRepository.searchProducts(productSearch.getBrands(), productSearch.getName(), productSearch.getFit(), productSearch.getPrice(), productSearch.getSize(), productSearch.getDescription(), productSearch.getReleaseDate(), page);
+		for (Product product : products) {
+			logger.debug("Found product: {}", product.toString());
+		}
 		List<Product> modifiableProduct = products.getContent();
 
 		// Filter the products
 		List<Product> filteredProducts = filterProductsByFeatures(modifiableProduct, productSearch.getFeatureFilters());
-		logger.info("Found {} products", filteredProducts.size());
+		logger.debug("Found {} products", filteredProducts.size());
 		return new PageImpl<>(filteredProducts, page, products.getTotalElements());
 //		return products;
 	}
@@ -138,23 +132,19 @@ public class ProductServiceImpl implements ProductService {
 	public List<String> getAllBrands() {
 		List<Product> products = this.productRepository.findAll();
 
-		return products.stream()
-			.map(Product::getBrand)
-			.distinct()
-			.collect(Collectors.toList());
+		return products.stream().map(Product::getBrand).distinct().collect(Collectors.toList());
 	}
 
 	private List<Product> filterProductsByFeatures(List<Product> products, List<FeatureFilterDTO> filters) {
 		// If there are no filters, return the products since no filtering is needed
-		if (filters.isEmpty()) {
+		if (filters == null || filters.isEmpty()) {
+			logger.warn("No filters provided, returning all products");
 			return products;
 		}
 
 		// Filter the products
-		return products.stream()
-			.filter(product -> filters.stream()
-				.allMatch(filter -> filterData(filter, product)))
-			.collect(Collectors.toList());
+		logger.debug("Filtering products by features: {}", filters);
+		return products.stream().filter(product -> filters.stream().allMatch(filter -> filterData(filter, product))).collect(Collectors.toList());
 	}
 
 
@@ -166,7 +156,7 @@ public class ProductServiceImpl implements ProductService {
 	 * @return {@link boolean} true if the product passes the filter, false otherwise
 	 */
 	private boolean filterData(FeatureFilterDTO filter, Product product) {
-		for (Feature feature : product.getFeatures())
+		for (Feature feature : product.getFeatures()) {
 			/*
 			 If the feature name matches the filter name, compare the feature value with the filter value using the operator.
 			 If the comparison is true, return true.
@@ -174,32 +164,62 @@ public class ProductServiceImpl implements ProductService {
 			 If there are no more features, return false.
 			 */
 			if (feature.getName().equals(filter.getName())) {
+				logger.debug("Matching feature: {} with filter: {}", feature, filter);
 				return switch (filter.getOperator()) {
 					case "==" -> feature.getValue().equals(filter.getValue());
 					case "<" -> {
 						try {
-							yield Double.parseDouble(feature.getValue()) < Double.parseDouble(filter.getValue().toString());
+							logger.debug("{} < {}", Double.parseDouble(feature.getValue()), Double.parseDouble(filter.getValue().toString()));
+							boolean result = Double.parseDouble(feature.getValue()) < Double.parseDouble(filter.getValue().toString());
+							logger.debug("Result: {}", result);
+							yield result;
 						} catch (NumberFormatException | ClassCastException e) {
+							logger.debug("Is not a number", e);
 							yield false;
 						}
 					}
 					case ">" -> {
 						try {
-							yield Double.parseDouble(feature.getValue()) > Double.parseDouble(filter.getValue().toString());
+							logger.debug("{} > {}", Double.parseDouble(feature.getValue()), Double.parseDouble(filter.getValue().toString()));
+							boolean result = Double.parseDouble(feature.getValue()) > Double.parseDouble(filter.getValue().toString());
+							logger.debug("Result: {}", result);
+							yield result;
 						} catch (NumberFormatException | ClassCastException e) {
+							logger.debug("Is not a number", e);
 							yield false;
 						}
 					}
 					case "<=" -> {
 						try {
-							yield Double.parseDouble(feature.getValue()) <= Double.parseDouble(filter.getValue().toString());
+							logger.debug("{} <= {}", Double.parseDouble(feature.getValue()), Double.parseDouble(filter.getValue().toString()));
+							boolean result = Double.parseDouble(feature.getValue()) <= Double.parseDouble(filter.getValue().toString());
+							logger.debug("Result: {}", result);
+							yield result;
 						} catch (NumberFormatException | ClassCastException e) {
+							logger.debug("Is not a number", e);
 							yield false;
 						}
 					}
-					default -> false;
+					case ">=" -> {
+						try {
+							logger.debug("{} >= {}", Double.parseDouble(feature.getValue()), Double.parseDouble(filter.getValue().toString()));
+							boolean result = Double.parseDouble(feature.getValue()) >= Double.parseDouble(filter.getValue().toString());
+							logger.debug("Result: {}", result);
+							yield result;
+						} catch (NumberFormatException | ClassCastException e) {
+							logger.debug("Is not a number", e);
+							yield false;
+						}
+					}
+					default -> {
+						logger.debug("Unsupported operator: {}", filter.getOperator());
+						yield false;
+					}
 				};
+			} else {
+				logger.debug("Feature name {} does not match filter name {}", feature.getName(), filter.getName());
 			}
+		}
 		return false;
 	}
 }
