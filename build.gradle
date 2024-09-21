@@ -8,12 +8,12 @@ plugins {
     id 'application'
 }
 
-group = 'com.***REMOVED***'
+group = 'com.asharia'
 version = '0.0.1-SNAPSHOT'
-mainClassName = 'com.***REMOVED***.dss.DynamicShoesSearchApplication'
+mainClassName = 'com.asharia.dss.DynamicShoesSearchApplication'
 
 springBoot {
-    mainClass = 'com.***REMOVED***.dss.DynamicShoesSearchApplication'
+    mainClass = 'com.asharia.dss.DynamicShoesSearchApplication'
 }
 
 java {
@@ -67,7 +67,7 @@ tasks.named('asciidoctor') {
 }
 
 application {
-    mainClass = 'com.***REMOVED***.dss.DynamicShoesSearchApplication'
+    mainClass = 'com.asharia.dss.DynamicShoesSearchApplication'
 }
 
 bootJar {
@@ -81,5 +81,5 @@ jar {
 }
 
 springBoot {
-    mainClass = 'com.***REMOVED***.dss.DynamicShoesSearchApplication'
+    mainClass = 'com.asharia.dss.DynamicShoesSearchApplication'
 }

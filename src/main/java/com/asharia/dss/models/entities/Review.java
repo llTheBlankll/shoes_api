@@ -1,4 +1,4 @@
-package com.***REMOVED***.dss.models.entities;
+package com.asharia.dss.models.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.***REMOVED***.dss.models.dto;
+package com.asharia.dss.models.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

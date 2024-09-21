@@ -1,6 +1,6 @@
-package com.***REMOVED***.dss.models.dto;
+package com.asharia.dss.models.dto;
 
-import com.***REMOVED***.dss.models.enums.Fit;
+import com.asharia.dss.models.enums.Fit;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * DTO for {@link com.***REMOVED***.dss.models.entities.Product}
+ * DTO for {@link com.asharia.dss.models.entities.Product}
  */
 @Data
 @AllArgsConstructor

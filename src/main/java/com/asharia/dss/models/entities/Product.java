@@ -1,6 +1,6 @@
-package com.***REMOVED***.dss.models.entities;
+package com.asharia.dss.models.entities;
 
-import com.***REMOVED***.dss.models.enums.Fit;
+import com.asharia.dss.models.enums.Fit;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

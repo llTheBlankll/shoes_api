@@ -1,6 +1,6 @@
-package com.***REMOVED***.dss.models.dto;
+package com.asharia.dss.models.dto;
 
-import com.***REMOVED***.dss.models.enums.CodeStatus;
+import com.asharia.dss.models.enums.CodeStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

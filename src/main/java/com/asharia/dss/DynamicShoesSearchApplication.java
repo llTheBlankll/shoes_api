@@ -1,4 +1,4 @@
-package com.***REMOVED***.dss;
+package com.asharia.dss;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

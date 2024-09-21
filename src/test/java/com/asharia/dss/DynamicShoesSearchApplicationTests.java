@@ -1,4 +1,4 @@
-package com.***REMOVED***.dss;
+package com.asharia.dss;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

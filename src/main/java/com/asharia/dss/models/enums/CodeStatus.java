@@ -1,4 +1,4 @@
-package com.***REMOVED***.dss.models.enums;
+package com.asharia.dss.models.enums;
 
 public enum CodeStatus {
 

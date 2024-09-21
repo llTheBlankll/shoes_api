@@ -1,7 +1,7 @@
-package com.***REMOVED***.dss.repositories;
+package com.asharia.dss.repositories;
 
-import com.***REMOVED***.dss.models.entities.Product;
-import com.***REMOVED***.dss.models.enums.Fit;
+import com.asharia.dss.models.entities.Product;
+import com.asharia.dss.models.enums.Fit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

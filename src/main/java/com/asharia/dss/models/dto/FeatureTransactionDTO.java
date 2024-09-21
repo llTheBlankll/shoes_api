@@ -1,4 +1,4 @@
-package com.***REMOVED***.dss.models.dto;
+package com.asharia.dss.models.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +8,7 @@ import lombok.experimental.Accessors;
 import java.io.Serializable;
 
 /**
- * DTO for {@link com.***REMOVED***.dss.models.entities.Feature}
+ * DTO for {@link com.asharia.dss.models.entities.Feature}
  */
 @Data
 @AllArgsConstructor
