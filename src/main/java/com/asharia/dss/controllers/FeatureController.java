@@ -1,5 +1,6 @@
 package com.asharia.dss.controllers;
 
+import com.asharia.dss.models.dto.FeatureDTO;
 import com.asharia.dss.models.dto.FeatureTransactionDTO;
 import com.asharia.dss.models.dto.MessageDTO;
 import com.asharia.dss.models.entities.Feature;
@@ -74,7 +75,9 @@ public class FeatureController {
 		}
 	)
 	public ResponseEntity<?> listAllFeatures(@PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable page) {
-		return ResponseEntity.ok(featureService.listAllFeatures(page));
+		return ResponseEntity.ok(
+			featureService.listAllFeatures(page).map((element) -> modelMapper.map(element, FeatureDTO.class))
+		);
 	}
 
 	@PutMapping
