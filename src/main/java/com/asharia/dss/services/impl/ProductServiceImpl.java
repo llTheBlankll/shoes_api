@@ -43,6 +43,9 @@ public class ProductServiceImpl implements ProductService {
 	 */
 	@Override
 	public CodeStatus createProduct(Product product) {
+		if (product == null) {
+			logger.debug("Product cannot be null");
+		}
 		this.productRepository.save(product);
 		return CodeStatus.OK;
 	}
@@ -131,7 +134,6 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public List<String> getAllBrands() {
 		List<Product> products = this.productRepository.findAll();
-
 		return products.stream().map(Product::getBrand).distinct().collect(Collectors.toList());
 	}
 

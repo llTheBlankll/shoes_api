@@ -6,7 +6,6 @@ import com.asharia.dss.models.dto.ProductSearchDTO;
 import com.asharia.dss.models.entities.Product;
 import com.asharia.dss.models.enums.CodeStatus;
 import com.asharia.dss.services.ProductService;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

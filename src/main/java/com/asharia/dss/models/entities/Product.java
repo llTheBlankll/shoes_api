@@ -49,18 +49,4 @@ public class Product {
 
 	@OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
 	private Set<Review> reviews = new LinkedHashSet<>();
-
-	@Override
-	public String toString() {
-		return "Product{" +
-			"id=" + id +
-			", brand='" + brand + '\'' +
-			", size=" + size +
-			", name='" + name + '\'' +
-			", fit=" + fit +
-			", price=" + price +
-			", description='" + description + '\'' +
-			", releaseDate=" + releaseDate +
-			'}';
-	}
 }
