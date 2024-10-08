@@ -1,5 +1,6 @@
 package com.asharia.dss.models.dto;
 
+import com.asharia.dss.models.entities.Product;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

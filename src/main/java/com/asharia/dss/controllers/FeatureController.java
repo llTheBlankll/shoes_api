@@ -401,7 +401,9 @@ public class FeatureController {
 		}
 		Optional<Feature> featureOptional = this.featureService.getFeature(id);
 		if (featureOptional.isPresent()) {
-			return ResponseEntity.ok(featureOptional.get());
+			return ResponseEntity.ok(
+				modelMapper.map(featureOptional.get(), FeatureDTO.class)
+			);
 		}
 
 		return ResponseEntity.status(404).body(new MessageDTO(
